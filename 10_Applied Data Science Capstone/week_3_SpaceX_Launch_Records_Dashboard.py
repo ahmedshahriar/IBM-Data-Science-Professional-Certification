@@ -2,8 +2,8 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 import pandas as pd
-from dash.dependencies import Input, Output
 import plotly.express as px
+from dash.dependencies import Input, Output
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
@@ -16,7 +16,7 @@ spacex_df = pd.read_csv('dataset/spacex_launch_dash.csv')
 launch_sites = spacex_df['Launch Site'].unique().tolist()
 launch_sites.insert(0, 'All Sites')
 
-payload_min , payload_max = spacex_df['Payload Mass (kg)'].min(), spacex_df['Payload Mass (kg)'].max()
+payload_min, payload_max = spacex_df['Payload Mass (kg)'].min(), spacex_df['Payload Mass (kg)'].max()
 app.layout = html.Div(
     children=[html.H1('SpaceX Launch Records Dashboard', style={'textAlign': 'center', 'color': '#503D36',
                                                                 'font-size': 40}),
@@ -31,8 +31,15 @@ app.layout = html.Div(
               html.Br(),
 
               html.P("Payload range (Kg):"),
-              dcc.RangeSlider(id='payload-slider', min=payload_min, max=10000, step=1000, value=[payload_min,
-                                                                                                    payload_max]),
+              dcc.RangeSlider(id='payload-slider', min=payload_min, max=10000,
+                              marks={
+                                  0: '0',
+                                  2500: '2500',
+                                  5000: '5000',
+                                  7500: '7500',
+                                  10000: '10000'
+                              },
+                              step=1000, value=[payload_min, payload_max]),
               html.Br(),
               html.Div(dcc.Graph(id='success-payload-scatter-chart')),
               ])
@@ -43,11 +50,18 @@ app.layout = html.Div(
     Input(component_id='site-dropdown', component_property='value')
 )
 def get_pie_chart(entered_site):
+    # https://community.plotly.com/t/graph-if-empty-dropdown/7483/2
+    # leave callback Output unchanged
+    if entered_site is None:
+        raise Exception()
+    # to clear the graph
+    # if entered_site is None:
+    #     return {'data': []}
     if entered_site == 'All Sites':
-        fig = px.pie(spacex_df, names="Launch Site", values='class')
+        fig = px.pie(spacex_df, names="Launch Site", values='class', title='Total Success Launches By Site')
     else:
         pie_filtered_df = spacex_df[spacex_df['Launch Site'] == entered_site]
-        fig = px.pie(pie_filtered_df, names="class")
+        fig = px.pie(pie_filtered_df, names="class", title='Total Success Launches By Site')
     return fig
 
 
@@ -58,10 +72,20 @@ def get_pie_chart(entered_site):
 )
 def get_slider_chart(entered_site, payload_value):
     if entered_site == 'All Sites':
-        scatter_plot = px.scatter(spacex_df, x="Payload Mass (kg)", y="class", color="Booster Version Category",)
+        slide_df = spacex_df[(spacex_df['Payload Mass (kg)'].between(left=payload_value[0], right=payload_value[1]))]
+        scatter_plot = px.scatter(slide_df, x="Payload Mass (kg)", y="class", color="Booster Version Category",
+                                  labels={
+                                      "class": "Launch Outcome",
+                                  },
+                                  title="Correlation between Payload and Success for all sites")
     else:
-        slide_df = spacex_df[(spacex_df['Payload Mass (kg)'].between(left=payload_value[0], right=payload_value[1])) & (spacex_df['Launch Site'] == entered_site)]
-        scatter_plot = px.scatter(slide_df, x="Payload Mass (kg)", y="class", color="Booster Version Category",)
+        slide_df = spacex_df[(spacex_df['Payload Mass (kg)'].between(left=payload_value[0], right=payload_value[1])) & (
+                spacex_df['Launch Site'] == entered_site)]
+        scatter_plot = px.scatter(slide_df, x="Payload Mass (kg)", y="class", color="Booster Version Category",
+                                  labels={
+                                      "class": "Launch Outcome",
+                                  },
+                                  title="Correlation between Payload and Success for all sites")
     return scatter_plot
 
 
