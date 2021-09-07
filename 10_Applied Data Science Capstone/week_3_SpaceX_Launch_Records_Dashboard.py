@@ -20,7 +20,10 @@ spacex_df = pd.read_csv('dataset/spacex_launch_dash.csv')
 launch_sites = spacex_df['Launch Site'].unique().tolist()
 launch_sites.insert(0, 'All Sites')
 
+<<<<<<< HEAD
 # payload min , max range
+=======
+>>>>>>> f2003e1aacf7e92dec35c3a501767e794326403c
 payload_min, payload_max = spacex_df['Payload Mass (kg)'].min(), spacex_df['Payload Mass (kg)'].max()
 app.layout = html.Div(
     children=[html.H1('SpaceX Launch Records Dashboard', style={'textAlign': 'center', 'color': '#503D36',
@@ -38,8 +41,11 @@ app.layout = html.Div(
               html.Br(),
 
               html.P("Payload range (Kg):"),
+<<<<<<< HEAD
 
               # https://dash.plotly.com/dash-core-components/rangeslider
+=======
+>>>>>>> f2003e1aacf7e92dec35c3a501767e794326403c
               dcc.RangeSlider(id='payload-slider', min=payload_min, max=10000,
                               marks={
                                   0: '0',
@@ -63,12 +69,18 @@ def get_pie_chart(entered_site):
     # leave callback Output unchanged
     if entered_site is None:
         raise Exception()
+<<<<<<< HEAD
 
     # to clear the graph
     # if entered_site is None:
     #     return {'data': []}
 
     # https://plotly.com/python/pie-charts/
+=======
+    # to clear the graph
+    # if entered_site is None:
+    #     return {'data': []}
+>>>>>>> f2003e1aacf7e92dec35c3a501767e794326403c
     if entered_site == 'All Sites':
         fig = px.pie(spacex_df, names="Launch Site", values='class', title='Total Success Launches By Site')
     else:
